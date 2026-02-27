@@ -40,3 +40,5 @@ footer {
     color: white;
     padding: 10px;
 }
+
+#map { height: 500px; }
