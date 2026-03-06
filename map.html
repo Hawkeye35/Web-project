@@ -28,11 +28,35 @@
     </header>
 
     <main>
-        <div class="container">
+        <section id="filters">
+            <h2>Filters</h2>
+            <form id="filterForm">
+                <label for="startDate">Start Date:</label>
+                <input type="date" id="startDate" name="startDate">
+
+                <label for="endDate">End Date:</label>
+                <input type="date" id="endDate" name="endDate">
+
+                <label for="month">Time:</label>
+                <select id="month" name="month">
+                    <option value="">All</option>
+                    <option value="Morning">Morning</option>
+                    <option value="Afternoon">Afternoon</option>
+                    <option value="Evening">Evening</option>
+
+                </select>
+
+                <button type="submit">Apply Filters</button>
+            </form>
+        </section>
+        
+
+    </main>
+
+    <div class="container">
         <h2>Map</h2>
         <div id="map"></div>
         </div>
-    </main>
 
     <footer>
         <p>
