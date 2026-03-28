@@ -16,6 +16,12 @@ echo http://localhost:3000
 echo http://%IP%:3000
 echo.
 
+REM Install dependencies if node_modules folder is missing
+if not exist "node_modules" (
+    echo Installing required Node.js modules...
+    npm install
+)
+
 REM Start server
 start "" http://localhost:3000
 
