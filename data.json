@@ -1,0 +1,10 @@
+[
+  {
+    "name": "John Doe",
+    "street": "123 St",
+    "city": "Omaha",
+    "state": "NE",
+    "zip": "12345",
+    "price": "29"
+  }
+]

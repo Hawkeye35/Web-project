@@ -23,8 +23,52 @@
 
     <main>
         <div class="container">
-        <h2>Reports</h2>
-        <p>placeholder text</p>
+
+        <div id="reportList"></div>
+
+        <script>
+document.addEventListener("DOMContentLoaded", function () {
+    fetch("/reports")
+        .then(response => response.json())
+        .then(data => {
+            const list = document.getElementById("reportList");
+
+            if (data.length === 0) {
+                list.innerHTML = "<p>No entries yet.</p>";
+                return;
+            }
+
+            data.forEach((entry, index) => {
+                const item = document.createElement("p");
+
+                item.textContent =
+                    "Name: " + entry.name +
+                    " | Address: " +
+                    entry.street + ", " +
+                    entry.city + ", " +
+                    entry.state + " " +
+                    entry.zip +
+                    " | Price: $" + entry.price + " ";
+
+                const deleteBtn = document.createElement("button");
+                deleteBtn.textContent = "Delete";
+
+                deleteBtn.onclick = function () {
+                    if (confirm("Delete this entry?")) {
+                        fetch("/delete/" + index, {
+                            method: "DELETE"
+                        })
+                        .then(() => location.reload()); 
+                    }
+                };
+
+                item.appendChild(deleteBtn);
+                list.appendChild(item);
+            });
+        });
+});
+</script>
+
         </div>
     </main>
 
