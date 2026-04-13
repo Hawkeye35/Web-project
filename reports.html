@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Danish Windmill Museum</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+
+    <header>
+    <h1>Danish Windmill Museum</h1>
+
+    <nav>
+        <ul>
+            <li><a href="index.html">Data Entry</a></li>
+            <li><a href="reports.html">Reports</a></li>
+            <li><a href="map.html">Map</a></li>
+        </ul>
+    </nav>
+
+    </header>
+
+    <main>
+        <div class="container">
+
+        <div id="reportList"></div>
+
+        <script>
+document.addEventListener("DOMContentLoaded", function () {
+    fetch("/reports")
+        .then(response => response.json())
+        .then(data => {
+            const list = document.getElementById("reportList");
+
+            if (data.length === 0) {
+                list.innerHTML = "<p>No entries yet.</p>";
+                return;
+            }
+
+            data.forEach((entry, index) => {
+                const item = document.createElement("p");
+
+                item.textContent =
+                    "Name: " + entry.name +
+                    " | Address: " +
+                    entry.street + ", " +
+                    entry.city + ", " +
+                    entry.state + " " +
+                    entry.zip +
+                    " | Price: $" + entry.price + " ";
+
+                const deleteBtn = document.createElement("button");
+                deleteBtn.textContent = "Delete";
+
+                deleteBtn.onclick = function () {
+                    if (confirm("Delete this entry?")) {
+                        fetch("/delete/" + index, {
+                            method: "DELETE"
+                        })
+                        .then(() => location.reload()); 
+                    }
+                };
+
+                item.appendChild(deleteBtn);
+                list.appendChild(item);
+            });
+        });
+});
+</script>
+
+        </div>
+    </main>
+
+    <footer>
+        <p>
+            Danish Windmill Museum Web Project
+        </p>
+    </footer>
+
+</body>
+</html>
