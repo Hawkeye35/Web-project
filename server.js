@@ -3,10 +3,45 @@ const mysql = require("mysql2");
 const cors = require("cors");
 const path = require("path"); // Imports required modules, express for servers, mysql2 for node.js to talk to mysql, and cors to allow frontend to send info.
 
+const session = require("express-session");
+
 const app = express(); // create server, allow requests, and lets the server read json.
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.use(session({
+    secret: "windmill-secret-key",
+    resave: false,
+    saveUninitialized: false
+}));
+
+function requireLogin(req, res, next) {
+    if (req.session.loggedIn) {
+        next();
+    } else {
+        res.status(401).send("You must log in first.");
+    }
+}
+
 app.use(express.static(__dirname));
+
+app.post("/login", function (req, res) {
+    const username = req.body.username;
+    const password = req.body.password;
+
+    if (username === "admin" && password === "windmill123") {
+        req.session.loggedIn = true;
+        res.redirect("/index.html");
+    } else {
+        res.send("Wrong username or password");
+    }
+});
+
+app.get("/logout", function (req, res) {
+    req.session.destroy();
+    res.redirect("/login.html");
+});
 
 // Database stuff
 

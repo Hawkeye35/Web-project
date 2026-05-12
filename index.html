@@ -11,7 +11,7 @@
     <header>
     <h1>Danish Windmill Museum</h1>
 
-    <nav>
+    <nav id="mainNav" style="display:none;">
     <ul>
         <li><a href="index.html">Data Entry</a></li>
         <li><a href="reports.html">Reports</a></li>
@@ -22,7 +22,19 @@
 
     </header>
 
-    <main>
+    <div class="container" id="loginSection">
+
+    <h2>Login</h2>
+
+    <input type="text" id="username" placeholder="Username">
+
+    <input type="password" id="password" placeholder="Password">
+
+    <button id="loginBtn">Login</button>
+
+</div>
+
+    <main id="mainContent" style="display:none;">
         <div class="container">
         <h2>Data Entry</h2>
 
@@ -51,5 +63,32 @@
         </p>
     </footer>
 
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const loggedIn = localStorage.getItem("loggedIn");
+
+    if (loggedIn === "true") {
+        showWebsite();
+    }
+
+    document.getElementById("loginBtn").addEventListener("click", function () {
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+
+        if (username === "admin" && password === "windmill123") {
+            localStorage.setItem("loggedIn", "true");
+            showWebsite();
+        } else {
+            alert("Wrong username or password");
+        }
+    });
+
+    function showWebsite() {
+        document.getElementById("mainNav").style.display = "block";
+        document.getElementById("mainContent").style.display = "block";
+        document.getElementById("loginSection").style.display = "none";
+    }
+});
+</script>
 </body>
 </html>

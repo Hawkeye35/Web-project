@@ -1,8 +1,8 @@
-// SET DEFAULT DATES (start of month → today)
+// SET DEFAULT DATES
 const today = new Date();
 const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
 
-// format to YYYY-MM-DD
+// format 
 const formatDate = (date) => date.toISOString().split("T")[0];
 
 document.addEventListener("DOMContentLoaded", () => {
