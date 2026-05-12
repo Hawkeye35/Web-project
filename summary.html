@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Danish Windmill Museum Summary Reports</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <h1>Danish Windmill Museum</h1>
+
+    <nav>
+    <ul>
+        <li><a href="index.html">Data Entry</a></li>
+        <li><a href="reports.html">Reports</a></li>
+        <li><a href="summary.html">Summary</a></li>
+        <li><a href="map.html">Map</a></li>
+    </ul>
+</nav>
+</header>
+
+<main>
+    <div class="container">
+        <h2>Summary Reports</h2>
+
+        <div class="reportControls">
+            <label for="startDate">Start Date:</label>
+<input type="date" id="startDate">
+
+<label for="endDate">End Date:</label>
+<input type="date" id="endDate">
+
+            <label for="stateFilter">State:</label>
+            <select id="stateFilter">
+                <option value="">All States</option>
+                <option value="IA">IA</option>
+                <option value="NE">NE</option>
+            </select>
+
+            <button id="filterBtn">Filter</button>
+            <button id="clearBtn">Clear</button>
+
+            <button id="exportBtn">Export CSV</button>
+
+<input type="file" id="csvFile" accept=".csv">
+<button id="importBtn">Import CSV</button>
+        </div>
+
+        <h3>Totals for Selected Date Range</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Total Entries</th>
+            <th>Total Visitors</th>
+        </tr>
+    </thead>
+    <tbody id="totalList"></tbody>
+</table>
+
+        <h3>Daily Totals</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Total Entries</th>
+                    <th>Total Visitors</th>
+                </tr>
+            </thead>
+            <tbody id="dailyList"></tbody>
+        </table>
+
+        <h3>State Totals</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>State</th>
+                    <th>Total Entries</th>
+                    <th>Total Visitors</th>
+                </tr>
+            </thead>
+            <tbody id="stateList"></tbody>
+        </table>
+    </div>
+</main>
+
+<footer>
+    <p>Danish Windmill Museum Web Project</p>
+</footer>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const totalList = document.getElementById("totalList");
+    const stateList = document.getElementById("stateList");
+    const dailyList = document.getElementById("dailyList");
+
+    function loadSummary() {
+    const startDate = document.getElementById("startDate").value;
+    const endDate = document.getElementById("endDate").value;
+
+    let url = "/summary-reports?";
+    url += "startDate=" + encodeURIComponent(startDate);
+    url += "&endDate=" + encodeURIComponent(endDate);
+
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            totalList.innerHTML = "";
+            stateList.innerHTML = "";
+            dailyList.innerHTML = "";
+
+            totalList.innerHTML = `
+                <tr>
+                    <td>${data.total.TotalEntries}</td>
+                    <td>${data.total.TotalVisitors}</td>
+                </tr>
+            `;
+
+            data.daily.forEach(row => {
+    const dateOnly = row.VisitDate.split("T")[0];
+
+    dailyList.innerHTML += `
+        <tr>
+            <td>${dateOnly}</td>
+            <td>${row.TotalEntries}</td>
+            <td>${row.TotalVisitors}</td>
+        </tr>
+    `;
+});
+
+            data.states.forEach(row => {
+                stateList.innerHTML += `
+                    <tr>
+                        <td>${row.StateName}</td>
+                        <td>${row.TotalEntries}</td>
+                        <td>${row.TotalVisitors}</td>
+                    </tr>
+                `;
+            });
+        })
+        .catch(err => alert("Summary Error: " + err));
+}
+
+    document.getElementById("filterBtn").addEventListener("click", loadSummary);
+
+    document.getElementById("clearBtn").addEventListener("click", function () {
+    document.getElementById("startDate").value = "";
+    document.getElementById("endDate").value = "";
+    loadSummary();
+});
+
+    // EXPORT CSV
+document.getElementById("exportBtn").addEventListener("click", function () {
+    fetch("/reports")
+        .then(response => response.json())
+        .then(data => {
+            let csv = "First Name,Last Name,City,State,Date,People\n";
+
+            data.forEach(entry => {
+                const dateOnly = entry.VisitDate.split("T")[0];
+
+                csv += `"${entry.FirstName}","${entry.LastName}","${entry.TownName}","${entry.StateName}","${dateOnly}","${entry.NumberOfPeople}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+            const link = document.createElement("a");
+
+            link.href = URL.createObjectURL(blob);
+            link.download = "visitor_reports.csv";
+            link.click();
+        });
+});
+
+
+// IMPORT CSV
+document.getElementById("importBtn").addEventListener("click", function () {
+    const fileInput = document.getElementById("csvFile");
+    const file = fileInput.files[0];
+
+    if (!file) {
+        alert("Please choose a CSV file first.");
+        return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function (event) {
+        const text = event.target.result;
+        const lines = text.split("\n").slice(1);
+
+        const entries = [];
+
+        lines.forEach(line => {
+            if (line.trim() === "") return;
+
+            const values = line.split(",");
+
+            entries.push({
+                firstName: values[0].replaceAll('"', '').trim(),
+                lastName: values[1].replaceAll('"', '').trim(),
+                city: values[2].replaceAll('"', '').trim(),
+                state: values[3].replaceAll('"', '').trim(),
+                visitDate: values[4].replaceAll('"', '').trim(),
+                numberOfPeople: values[5].replaceAll('"', '').trim(),
+            });
+        });
+
+        fetch("/import-csv", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(entries)
+        })
+        .then(response => response.text())
+        .then(message => {
+            alert(message);
+            loadSummary();
+        });
+    };
+
+    reader.readAsText(file);
+});
+
+// set default dates
+const today = new Date();
+
+// first day of month
+const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+
+// format 
+function formatDate(date) {
+    return date.toISOString().split("T")[0];
+}
+
+document.getElementById("startDate").value = formatDate(firstDay);
+document.getElementById("endDate").value = formatDate(today);
+
+    loadSummary();
+});
+</script>
+
+</body>
+</html>

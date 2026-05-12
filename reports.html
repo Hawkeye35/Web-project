@@ -12,62 +12,191 @@
     <h1>Danish Windmill Museum</h1>
 
     <nav>
-        <ul>
-            <li><a href="index.html">Data Entry</a></li>
-            <li><a href="reports.html">Reports</a></li>
-            <li><a href="map.html">Map</a></li>
-        </ul>
-    </nav>
+    <ul>
+        <li><a href="index.html">Data Entry</a></li>
+        <li><a href="reports.html">Reports</a></li>
+        <li><a href="summary.html">Summary</a></li>
+        <li><a href="map.html">Map</a></li>
+    </ul>
+</nav>
 
     </header>
 
     <main>
         <div class="container">
 
-        <div id="reportList"></div>
+        <h2>Visitor Reports</h2>
 
-        <script>
+<div class="reportControls">
+    <input type="text" id="searchInput" placeholder="Search name or city">
+
+    <select id="stateFilter">
+        <option value="" selected>All States</option>
+        <option value="IA">IA</option>
+        <option value="NE">NE</option>
+    </select>
+
+    <input type="date" id="startDate">
+    <input type="date" id="endDate">
+
+    <select id="sortOrder">
+        <option value="newest">Newest First</option>
+        <option value="oldest">Oldest First</option>
+    </select>
+
+    <button id="filterBtn">Filter</button>
+    <button id="clearBtn">Clear</button>
+
+</div>
+
+<table id="reportTable">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>City</th>
+            <th>State</th>
+            <th>Date</th>
+            <th>People</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+
+    <tbody id="reportList"></tbody>
+</table>
+
+
+<script>
 document.addEventListener("DOMContentLoaded", function () {
-    fetch("/reports")
-        .then(response => response.json())
-        .then(data => {
-            const list = document.getElementById("reportList");
+    const list = document.getElementById("reportList");
 
-            if (data.length === 0) {
-                list.innerHTML = "<p>No entries yet.</p>";
-                return;
-            }
+    function loadReports() {
+        const search = document.getElementById("searchInput").value;
+        const state = document.getElementById("stateFilter").value;
+        const startDate = document.getElementById("startDate").value;
+        const endDate = document.getElementById("endDate").value;
+        const sort = document.getElementById("sortOrder").value;
 
-            data.forEach((entry, index) => {
-                const item = document.createElement("p");
+        let url = "/reports?";
+        url += "search=" + encodeURIComponent(search);
+        url += "&state=" + encodeURIComponent(state);
+        url += "&startDate=" + encodeURIComponent(startDate);
+        url += "&endDate=" + encodeURIComponent(endDate);
+        url += "&sort=" + encodeURIComponent(sort);
 
-                item.textContent =
-                    "Name: " + entry.name +
-                    " | Address: " +
-                    entry.street + ", " +
-                    entry.city + ", " +
-                    entry.state + " " +
-                    entry.zip +
-                    " | Price: $" + entry.price + " ";
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                list.innerHTML = "";
 
-                const deleteBtn = document.createElement("button");
-                deleteBtn.textContent = "Delete";
+                if (data.length === 0) {
+                    list.innerHTML = `
+                        <tr>
+                            <td colspan="6">No entries found.</td>
+                        </tr>
+                    `;
+                    return;
+                }
 
-                deleteBtn.onclick = function () {
-                    if (confirm("Delete this entry?")) {
-                        fetch("/delete/" + index, {
-                            method: "DELETE"
-                        })
-                        .then(() => location.reload()); 
-                    }
-                };
+                data.forEach(entry => {
+    const row = document.createElement("tr");
 
-                item.appendChild(deleteBtn);
-                list.appendChild(item);
-            });
+    const dateOnly = entry.VisitDate.split("T")[0];
+
+    row.innerHTML = `
+        <td>${entry.FirstName} ${entry.LastName}</td>
+        <td>${entry.TownName}</td>
+        <td>${entry.StateName}</td>
+        <td>${dateOnly}</td>
+        <td>${entry.NumberOfPeople}</td>
+        <td>
+            <button class="editBtn">Edit</button>
+            <button class="deleteBtn">Delete</button>
+        </td>
+    `;
+
+    list.appendChild(row);
+
+    row.querySelector(".deleteBtn").addEventListener("click", function () {
+        if (confirm("Delete this entry?")) {
+            fetch("/delete/" + entry.VisitorsID, {
+                method: "DELETE"
+            })
+            .then(() => loadReports());
+        }
+    });
+
+    row.querySelector(".editBtn").addEventListener("click", function () {
+        row.innerHTML = `
+            <td>
+                <input type="text" class="editFirstName" value="${entry.FirstName}">
+                <input type="text" class="editLastName" value="${entry.LastName}">
+            </td>
+            <td><input type="text" class="editCity" value="${entry.TownName}"></td>
+            <td><input type="text" class="editState" value="${entry.StateName}"></td>
+            <td><input type="date" class="editDate" value="${dateOnly}"></td>
+            <td><input type="number" class="editPeople" value="${entry.NumberOfPeople}"></td>
+            <td>
+                <button class="saveBtn">Save</button>
+                <button class="cancelBtn">Cancel</button>
+            </td>
+        `;
+
+        row.querySelector(".saveBtn").addEventListener("click", function () {
+            const updatedEntry = {
+                firstName: row.querySelector(".editFirstName").value,
+                lastName: row.querySelector(".editLastName").value,
+                city: row.querySelector(".editCity").value,
+                state: row.querySelector(".editState").value,
+                visitDate: row.querySelector(".editDate").value,
+                numberOfPeople: row.querySelector(".editPeople").value,
+            };
+
+            fetch("/edit/" + entry.VisitorsID, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(updatedEntry)
+            })
+            .then(response => response.text())
+            .then(() => loadReports());
         });
+
+        row.querySelector(".cancelBtn").addEventListener("click", function () {
+            loadReports();
+        });
+    });
+});
+
+                document.querySelectorAll(".deleteBtn").forEach(btn => {
+                    btn.addEventListener("click", function () {
+                        const id = this.getAttribute("data-id");
+
+                        if (confirm("Delete this entry?")) {
+                            fetch("/delete/" + id, {
+                                method: "DELETE"
+                            })
+                            .then(() => loadReports());
+                        }
+                    });
+                });
+            });
+    }
+
+    document.getElementById("filterBtn").addEventListener("click", loadReports);
+
+    document.getElementById("clearBtn").addEventListener("click", function () {
+        document.getElementById("searchInput").value = "";
+        document.getElementById("stateFilter").value = "";
+        document.getElementById("startDate").value = "";
+        document.getElementById("endDate").value = "";
+        document.getElementById("sortOrder").value = "newest";
+
+        loadReports();
+    });
+
+    loadReports(); // initial load
 });
 </script>
+
 
         </div>
     </main>

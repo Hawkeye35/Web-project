@@ -38,6 +38,8 @@ VisitorsID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 FirstName VARCHAR (100) NOT NULL,
 LastName VARCHAR (100) NOT NULL,
 VisitDate DATE NOT NULL,
+NumberOfPeople INT NOT NULL,
+Price DECIMAL(10,2) NOT NULL,
 TownID INT NOT NULL,
 
 INDEX (TownID),
@@ -82,8 +84,8 @@ INSERT INTO State (StateName, CountryID) VALUES
 INSERT INTO Town (TownName, StateID) 
 VALUES ('Oakland', 15), ('Council Bluffs', 15), ('Omaha', 27);
 
-INSERT INTO Visitors (FirstName, LastName, TownID, VisitDate)
-VALUES ('William', 'Regen', 2, '2026-03-10'), ('Ryan', 'Conover', 1, '2026-03-12'), ('Kelly','Roberston', 3, '2026-03-18');
+INSERT INTO Visitors (FirstName, LastName, TownID, VisitDate, NumberOfPeople, Price)
+VALUES ('William', 'Regen', 2, '2026-03-10', 2, 20.00), ('Ryan', 'Conover', 1, '2026-03-12', 1, 10.00), ('Kelly','Roberston', 3, '2026-03-18', 4, 40.00);
 
 INSERT INTO OutsideVisitors (FirstName, LastName, CountryID, VisitDate)
 VALUES ('Izuku', 'Mahoro', 6, '2026-02-27');

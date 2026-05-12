@@ -12,12 +12,13 @@
     <h1>Danish Windmill Museum</h1>
 
     <nav>
-        <ul>
-            <li><a href="index.html">Data Entry</a></li>
-            <li><a href="reports.html">Reports</a></li>
-            <li><a href="map.html">Map</a></li>
-        </ul>
-    </nav>
+    <ul>
+        <li><a href="index.html">Data Entry</a></li>
+        <li><a href="reports.html">Reports</a></li>
+        <li><a href="summary.html">Summary</a></li>
+        <li><a href="map.html">Map</a></li>
+    </ul>
+</nav>
 
     </header>
 
@@ -25,23 +26,19 @@
         <div class="container">
         <h2>Data Entry</h2>
 
-        <form id="entryForm">
+    <form id="entryForm">
 
-        <input name="name" placeholder="Name" required>
-
-        <input name="street" placeholder="Street Address" required>
-
+        <input name="firstName" placeholder="First Name" required>
+        <input name="lastName" placeholder="Last Name" required>
         <input name="city" placeholder="City" required>
-
         <input name="state" placeholder="State" required>
-
         <input name="zip" placeholder="ZIP Code" type="text" required>
 
-        <input name="price" placeholder="Price">
+        <input name="numberOfPeople" placeholder="Number of People" type="number" min="1" required>
 
         <button type="submit">Submit</button>
 
-        </form>
+    </form>
 
         <script src="submit.js"></script>
 
