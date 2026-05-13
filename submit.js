@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", function () {
             city: form.city.value.trim(),
             state: form.state.value.trim(),
             numberOfPeople: form.numberOfPeople.value,
-            price: form.price.value
+            price: 0
         };
 
         fetch("/submit", {
