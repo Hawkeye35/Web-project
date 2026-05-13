@@ -7,8 +7,7 @@ npm install
 echo.
 echo Setting up database
 
-mysql -u root -p < sql\webproject.sql
-
+mysql -u root -p < "Web Project.sql"
 echo.
 echo Setup complete.
 
